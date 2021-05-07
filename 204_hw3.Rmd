@@ -1,0 +1,54 @@
+---
+title: "ESM 204 HW3"
+author: "Roshni Katrak-Adefowora"
+date: "5/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+library(cowplot)
+```
+
+```{r}
+#no scientific notation
+options(scipen=999) # not output scientific notation for #s
+
+#read in data
+demand <- read_csv(here("HW3_data.csv")) %>% 
+  clean_names()
+
+#plot linear regression
+model_demand_low <- lm(price_dollars ~ q_low_gallons, data=demand)
+model_demand_high <- lm(price_dollars ~ q_high_gallons, data=demand)
+
+#get coefficients
+low_intercept <- model_demand_low$coefficients[[1]] #retrieve intercept coefficient and store as a
+low_slope <- model_demand_low$coefficients[[2]] #retrieve slope coefficient and store as b
+
+high_intercept <- model_demand_high$coefficients[[1]]
+high_slope <- model_demand_high$coefficients[[2]]
+
+#fit line
+price_fitted_low <- low_intercept + low_slope*demand$q_low_gallons
+price_fitted_high <- high_intercept + high_slope*demand$q_high_gallons
+
+#plot linear regression
+plot <- ggplot(data=demand)+
+  geom_point(aes(x=q_low_gallons,y=price_dollars, color = "blue"))+
+  geom_point(aes(x=q_high_gallons,y=price_dollars))+
+  theme_cowplot(16)+
+  geom_line(aes(y=price_fitted_low, x=q_low_gallons))+
+  geom_line(aes(y=price_fitted_high, x=q_high_gallons))
+
+plot
+
+#aggregate demand
+demand$aggregate_demand <- rowSums( demand[,2:3] )
+
+
+```
+
